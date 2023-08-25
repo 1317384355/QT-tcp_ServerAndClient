@@ -1,6 +1,7 @@
 #pragma once
 #include <QTcpSocket>
 #include <QHostAddress>
+#include <QThread>
 #include <QFile>
 #include <QFileInfo>
 #include <QTimer>
@@ -12,15 +13,17 @@ class Send : public QObject
 signals:
     void connected();
     void disconnected();
-    void readyRead(QByteArray date);
+    void recvFile(QByteArray date);
+    void recvMsg(QByteArray date);
+    // void
     void curPercent(int percent);
 
 public:
-    explicit Send(bool isFile = false, QObject *parent = nullptr);
+    explicit Send(QObject *parent = nullptr);
     ~Send();
 
+    void startConnect(QHostAddress ip, unsigned short msg_port, unsigned short file_port);
 public slots:
-    void startConnect(QString ip, unsigned short port);
     void sendMsg(QString msg);
     void sendFile(QString path);
     void sendFileData();
@@ -28,12 +31,12 @@ public slots:
     void endConnect();
 
 private:
-    QTcpSocket *m_tcp;
+    QTcpSocket *m_msgSocket, *m_fileSocket;
+    QThread *msgThread, *fileThread;
     QFile file;          // 文件对象
     QString filename;    // 文件名字
     qint16 filesize;     // 文件大小
     qint16 sendfilesize; // 已发送大小
 
     QTimer *timer;
-    bool isFileSocket = false;
 };
