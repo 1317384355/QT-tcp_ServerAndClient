@@ -1,6 +1,7 @@
 #include "ClientMsg.h"
 
-ClientMsg::ClientMsg(QObject *parent) : QObject(parent)
+ClientMsg::ClientMsg(QObject *parent) : QObject(parent),
+                                        m_tcp(nullptr)
 {
 }
 
