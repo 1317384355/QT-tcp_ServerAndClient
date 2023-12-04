@@ -16,8 +16,8 @@ public:
     ~ServerMsg();
 
 public slots:
-    void startConnect(unsigned short port);
-    void endConnect();
+    void on_startConnect();
+    void on_endConnect();
     void sendMsg(int index, QString msg);
     void sendFile(int index, SFileInfo *info);
 

@@ -1,9 +1,8 @@
 #pragma once
-#include "command.h"
-#include "SFileInfo.h"
 #include "SSendFile.h"
 #include "SRecvFile.h"
 #include <QThreadPool>
+#include <unordered_map>
 
 class ServerFile : public QObject
 {
@@ -18,19 +17,18 @@ signals:
     void curRecvPercent(int percent);
 
 public:
-    ServerFile(QList<SFileInfo *> *list, QObject *parent = nullptr);
+    ServerFile(QObject *parent = nullptr);
     ~ServerFile();
 
 public slots:
-    void startConnect(unsigned short port);
-    void endConnect();
+    void on_startConnect();
+    void on_endConnect();
     void setFolderName(QString dir);
     void addSendInfo(SFileInfo *info);
 
 private:
     QTcpServer *m_server;
-    QList<QTcpSocket *> list_socket;
-    SFileInfo *sendId[1024];
+    std::unordered_map<qint16, SFileInfo *> map_sendId;
 
     QThreadPool threadPool;
     QString folderName; // 文件名字，接收文件夹路径

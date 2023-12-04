@@ -12,10 +12,12 @@ class Server : public QMainWindow
 {
     Q_OBJECT
 signals:
+    void startConnect();
     void sendMsg(int index, QString msg);      // 发送消息
     void sendFile(int index, SFileInfo *info); // 发送文件申请
     void changeFoler(QString dir);             // 修改接收文件名
     void addSendInfo(SFileInfo *info);
+    void endConnect();
 
 public:
     Server(QWidget *parent = nullptr);
@@ -46,6 +48,7 @@ private slots:
     void on_btnStart_clicked();               // 开启服务器
     void on_btnSendMsg_clicked();             // 向某个客户端发送消息
     void on_btnSelectFile_clicked();          // 选择文件（待发送
+    void on_btnDeleteFile_clicked();          // 删除选中文件
     void on_btnSendFile_clicked();            // 发送文件
     void on_btnSelectRecvFolder_clicked();    // 选择接收文件夹路径
     void on_tableWidget_cellPressed(int row); // 禁止发送表格中接收文件

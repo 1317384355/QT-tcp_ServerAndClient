@@ -1,22 +1,25 @@
 #include "ServerMsg.h"
 
-ServerMsg::ServerMsg(QObject *parent) : QObject(parent)
+ServerMsg::ServerMsg(QObject *parent) : QObject(parent),
+                                        m_server(nullptr)
 {
-    m_server = new QTcpServer(this);
-    connect(m_server, &QTcpServer::newConnection, this, &ServerMsg::new_client);
 }
 
 ServerMsg::~ServerMsg()
 {
-    endConnect();
 }
 
-void ServerMsg::startConnect(unsigned short port)
+void ServerMsg::on_startConnect()
 {
-    m_server->listen(QHostAddress::Any, port);
+    if (m_server == nullptr)
+    {
+        m_server = new QTcpServer(this);
+        connect(m_server, &QTcpServer::newConnection, this, &ServerMsg::new_client);
+    }
+    m_server->listen(QHostAddress::Any, MSG_PORT);
 }
 
-void ServerMsg::endConnect()
+void ServerMsg::on_endConnect()
 {
     for (auto socket : list_socket)
     {
@@ -33,7 +36,7 @@ void ServerMsg::sendMsg(int index, QString msg)
 
 void ServerMsg::sendFile(int index, SFileInfo *info)
 { // 此处仅为发送文件申请
-    list_socket[index]->write((QString("%1##%2##%3##%4").arg(FILE_SEND_APPLY).arg(*info->fileName).arg(info->fileSize).arg(info->sendId)).toUtf8());
+    list_socket[index]->write((QString("%1##%2##%3##%4").arg(FILE_SEND_APPLY).arg(info->fileName).arg(info->fileSize).arg(info->sendId)).toUtf8());
     list_socket.at(index)->flush();
 }
 
@@ -59,5 +62,6 @@ void ServerMsg::new_client()
         socket->close();
         emit ServerMsg::listRemoveSocket(list_socket.indexOf(socket));
         list_socket.removeOne(socket); // list移除断开的socket
+        socket->deleteLater();
     });
 }

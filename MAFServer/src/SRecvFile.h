@@ -1,7 +1,5 @@
 #pragma once
 #include "command.h"
-#include "SFileInfo.h"
-#include <QRunnable>
 
 class SRecvFile : public QObject, public QRunnable
 {
@@ -12,6 +10,7 @@ signals:
     void recvStart(QString text);
     void curPercent(int percent);
     void recvFinish(QString text);
+    void waitDelete();
 
 public:
     explicit SRecvFile(QTcpSocket *socket, SFileInfo *info, QObject *parent = nullptr);
@@ -27,4 +26,6 @@ private:
     QString fileName; // 待接收文件路径
     qint64 fileSize;  // 待接收数据大小
     qint64 dataSize;  // 已接收数据大小
+
+    int recvTimes; // 接收次数,用于减少发送百分比信号的次数
 };

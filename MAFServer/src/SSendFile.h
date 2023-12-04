@@ -1,7 +1,5 @@
 #pragma once
 #include "command.h"
-#include "SFileInfo.h"
-#include <QRunnable>
 
 class SSendFile : public QObject, public QRunnable
 {
@@ -27,4 +25,6 @@ private:
     QString fileName; // 待发送文件名
     qint64 fileSize;  // 待发送数据大小
     qint64 dataSize;  // 已发送数据大小
+
+    int sendTimes; // 发送次数,用于减少发送百分比信号的次数
 };

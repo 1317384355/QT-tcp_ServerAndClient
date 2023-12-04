@@ -1,12 +1,19 @@
 #pragma once
+#include "SFileInfo.h"
 #include <QTcpServer>
 #include <QTcpSocket>
 #include <QHostAddress>
+#include <QRunnable>
 #include <QThread>
 #include <QFile>
+#include <QTime>
 
 #define MSG_PORT 8000
 #define SEND_FILE_PORT 8001
+
+// 每次发送 8*1024*sizeof(char) 大小的数据
+#define SEND_SIZE 8192
+#define DATA_SIZE 65536
 
 enum errorOnFile
 {

@@ -1,5 +1,5 @@
 #include "SFileInfo.h"
-SFileInfo::SFileInfo(QString *path, QString *file, qint64 size, qint16 id)
+SFileInfo::SFileInfo(QString path, QString file, qint64 size, qint16 id)
 {
     filePath = path;
     fileName = file;
@@ -9,6 +9,4 @@ SFileInfo::SFileInfo(QString *path, QString *file, qint64 size, qint16 id)
 
 SFileInfo::~SFileInfo()
 {
-    delete filePath;
-    delete fileName;
 }
