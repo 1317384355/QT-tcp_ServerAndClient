@@ -1,7 +1,7 @@
 #pragma once
 #include "command.h"
 #include "CFileInfo.h"
-#include <QTimer>
+#include <QTime>
 
 class CRecvFile : public QThread
 {
@@ -26,9 +26,10 @@ private:
     QTcpSocket *m_tcp; // 接收用socket
 
     int sendId;       // 文件ID,用于和服务器验证
-    QFile *file;      // 文件
     QString filePath; // 文件储存路径
     QString fileName; // 待接收文件路径
     qint64 fileSize;  // 待接收数据大小
     qint64 dataSize;  // 已接收数据大小
+
+    int recvTimes; // 接收次数
 };

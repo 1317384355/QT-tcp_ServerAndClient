@@ -2,10 +2,6 @@
 
 ClientMsg::ClientMsg(QObject *parent) : QObject(parent)
 {
-    m_tcp = new QTcpSocket(this); // 接收消息
-    connect(m_tcp, &QTcpSocket::readyRead, this, &ClientMsg::readData);
-    // 若连接发出断开信号, 则调用断开函数
-    connect(m_tcp, &QTcpSocket::disconnected, this, &ClientMsg::endConnect);
 }
 
 ClientMsg::~ClientMsg()
@@ -13,8 +9,15 @@ ClientMsg::~ClientMsg()
     m_tcp->disconnect();
 }
 
-void ClientMsg::startConnect(QString ip, unsigned short port)
+void ClientMsg::on_startConnect(QString ip, unsigned short port)
 {
+    if (m_tcp == nullptr)
+    {
+        m_tcp = new QTcpSocket(this); // 接收消息
+        connect(m_tcp, &QTcpSocket::readyRead, this, &ClientMsg::readData);
+        // 若连接发出断开信号, 则调用断开函数
+        connect(m_tcp, &QTcpSocket::disconnected, this, &ClientMsg::on_endConnect);
+    }
     m_tcp->connectToHost(ip, port);
     if (true == m_tcp->waitForConnected(2000))
     { // 阻塞线程,直到连接 成功/失败
@@ -22,11 +25,11 @@ void ClientMsg::startConnect(QString ip, unsigned short port)
     }
     else
     { // 失败,调用关闭程序
-        this->endConnect();
+        this->on_endConnect();
     }
 }
 
-void ClientMsg::sendMsg(QString msg)
+void ClientMsg::on_sendMsg(QString msg)
 {
     m_tcp->write((QString::number(MASSAGE) + "##" + msg).toUtf8());
 }
@@ -49,7 +52,7 @@ void ClientMsg::readData()
     }
 }
 
-void ClientMsg::endConnect()
+void ClientMsg::on_endConnect()
 {
     m_tcp->disconnectFromHost();    // 关闭 socket
     emit ClientMsg::disconnected(); // 向主程序出已关闭信号

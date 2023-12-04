@@ -40,7 +40,7 @@ private:
     void addTableRow(QString fileName, qint64 fileSize, QString Attribute);
 
 private slots:
-    void recvMsg(QString msg);
+    void on_recvMsg(QString msg);
     void showRecv(QString fileName, qint64 fileSize, qint16 sendID);
     void showError(int error);
 

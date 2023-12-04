@@ -16,9 +16,9 @@ public:
     ~ClientMsg();
 
 public slots:
-    void endConnect(); // 断开连接并发出信号
-    void startConnect(QString ip, unsigned short port);
-    void sendMsg(QString msg);
+    void on_endConnect(); // 断开连接并发出信号
+    void on_startConnect(QString ip, unsigned short port);
+    void on_sendMsg(QString msg);
 
 private:
     QTcpSocket *m_tcp;

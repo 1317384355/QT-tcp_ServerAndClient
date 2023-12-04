@@ -31,24 +31,24 @@ Client::Client(QWidget *parent)
     ui->lineEditRecvFolder->setText(rFolder); // 并展示
 
     msgSocket = new ClientMsg();
-    msgThread = new QThread();
+    msgThread = new QThread;
     msgSocket->moveToThread(msgThread); // socket移入子线程
     msgThread->start();                 // 线程开始运行
 
-    connect(this, &Client::startConnect, msgSocket, &ClientMsg::startConnect);
-    connect(msgSocket, &ClientMsg::connected, this, [=]() { // 连接成功
+    connect(this, &Client::startConnect, msgSocket, &ClientMsg::on_startConnect);
+    connect(msgSocket, &ClientMsg::connected, this, [this]() { // 连接成功
         labelStatus->setText("连接成功");
         labelIP->setText(addr); // 连接目标地址
 
         ui->btnClose->setEnabled(true);
         ui->btnSendMsg->setEnabled(true);
     });
-    connect(this, &Client::sendMsg, msgSocket, &ClientMsg::sendMsg);
-    connect(msgSocket, &ClientMsg::recvMsg, this, &Client::recvMsg);
+    connect(this, &Client::sendMsg, msgSocket, &ClientMsg::on_sendMsg);
+    connect(msgSocket, &ClientMsg::recvMsg, this, &Client::on_recvMsg);
     connect(msgSocket, &ClientMsg::recvFileApply, this, &Client::showRecv);
     // 断开操作, 按钮主动断开 和 断开后续操作
-    connect(ui->btnClose, &QPushButton::clicked, msgSocket, &ClientMsg::endConnect);
-    connect(msgSocket, &ClientMsg::disconnected, this, [=]() { //
+    connect(ui->btnClose, &QPushButton::clicked, msgSocket, &ClientMsg::on_endConnect);
+    connect(msgSocket, &ClientMsg::disconnected, this, [this]() { //
         ui->btnStart->setEnabled(true);
         ui->lineEdit->setEnabled(true);
         ui->btnClose->setEnabled(false);
@@ -62,20 +62,21 @@ Client::Client(QWidget *parent)
 
 Client::~Client()
 {
-    // 关闭socket连接,然后析构
-    emit ui->btnClose->clicked();
-    msgSocket->deleteLater();
-
     // 关闭线程后析构
     msgThread->quit();
     msgThread->wait();
     msgThread->deleteLater();
+
+    // 关闭socket连接,然后析构
+    emit ui->btnClose->clicked();
+    msgSocket->deleteLater();
     for (auto ptr : info_list)
         delete ptr;
+    // for()
     delete ui;
 }
 
-void Client::recvMsg(QString msg)
+void Client::on_recvMsg(QString msg)
 {
     ui->textEdit->append("服务端：" + msg);
 }
@@ -160,8 +161,8 @@ void Client::on_btnSelectFile_clicked()
     // 读取文件信息
     QFileInfo info(*file);
     // 读取信息 存至 info_list 备用
-    CFileInfo *fInfor = new CFileInfo(file, new QString(info.fileName()), new qint64(info.size()));
-    info_list.push_back(fInfor);
+    CFileInfo *fileInfo = new CFileInfo(file, new QString(info.fileName()), new qint64(info.size()));
+    info_list.push_back(fileInfo);
     // 保证列表数量 和 widget展示数量 相同, 置为 nullptr 表示该文件不曾被发送
     CSendFile *sendSocket = nullptr;
     file_list.push_back(sendSocket);
@@ -186,7 +187,8 @@ void Client::on_btnDeleteFile_clicked()
         CRecvFile *recvFile = (CRecvFile *)file_list.takeAt(curRow);
         if (wait_list.count() < 4)
             wait_list.push_back(recvFile);
-        delete recvFile;
+        else
+            delete recvFile;
     }
     delete info_list.takeAt(curRow);
 
@@ -221,6 +223,7 @@ void Client::on_btnSendFile_clicked()
         connect(sendSocket, &CSendFile::sendFinish, ui->textEdit, &QTextEdit::append);
     }
     emit sendSocket->curPercent(0);
+    sendSocket->setIp(this->addr);
     sendSocket->start();
 }
 
@@ -233,11 +236,10 @@ void Client::on_btnRecvFile_clicked()
     CRecvFile *recvSocket = (CRecvFile *)file_list.at(curRow);
     if (recvSocket != nullptr)
     { // 禁止对一条文件信息二次接收
-        ui->btnRecvFile->setEnabled(false);
         return;
     }
 
-    QProgressBar *bar = new QProgressBar();
+    QProgressBar *bar = new QProgressBar(this);
     bar->setRange(0, 100);
     bar->setValue(0);
     bar->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
@@ -272,7 +274,7 @@ void Client::on_tableWidget_cellPressed(int row)
     if (row < 0)
         return;
 
-    if (info_list.at(row)->sendId == -1)
+    if (info_list.at(row)->sendId <= 0)
     {
         ui->btnSendFile->setEnabled(true);
         ui->btnRecvFile->setEnabled(false);
