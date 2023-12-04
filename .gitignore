@@ -1,2 +1,5 @@
-MAFClient/CMakeLists.txt
-MAFServer/CMakeLists.txt
+.vscode/
+MAFClient/.vscode/
+MAFClient/build/
+MAFServer/.vscode/
+MAFServer/build/
