@@ -3,3 +3,5 @@ MAFClient/.vscode/
 MAFClient/build/
 MAFServer/.vscode/
 MAFServer/build/
+
+*.user
